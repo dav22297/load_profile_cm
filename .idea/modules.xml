@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/Computation_module.iml" filepath="$PROJECT_DIR$/.idea/Computation_module.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/load_profile_cm.iml" filepath="$PROJECT_DIR$/.idea/load_profile_cm.iml" />
     </modules>
   </component>
 </project>

@@ -7,7 +7,7 @@ import requests
 import logging
 import os
 from flask import send_from_directory
-from  app import helper
+from app import helper
 from app import constant
 
 from app.api_v1 import errors
@@ -46,7 +46,7 @@ def register():
     #  200:
     #   description: MWS is aware of the CM
     #  examples:
-    #   results: {"response": {"category": "Buildings", "cm_name": "calculation_module_1", "layers_needed": ["heat_density_tot"], "cm_description": "this computation module allows to ....", "cm_url": "http://127.0.0.1:5002/", "cm_id": 1, "inputs_calculation_module": [{"input_min": 1, "input_value": 1, "input_unit": "none", "input_name": "Reduction factor", "cm_id": 1, "input_type": "input", "input_parameter_name": "multiplication_factor", "input_max": 10}, {"input_min": 10, "input_value": 50, "input_unit": "", "input_name": "Blablabla", "cm_id": 1, "input_type": "range", "input_parameter_name": "bla", "input_max": 1000}]}}
+    #   results: {"response": {"category": "Buildings", "cm_name": "calculation_module_1", "layers_needed": ["heat_density_tot"], "cm_description": "this computation module allows to ....", "cm_url": "http://127.0.0.1:5002/", "cm_id": 1, "inputs_calculation_module": [{"input_min": 1, "input_value": 1, "input_unit": "none", "input_name": "Reduction factor", "cm_id": 1, "input_type": "input", "input_parameter_name": "reduction_factor", "input_max": 10}, {"input_min": 10, "input_value": 50, "input_unit": "", "input_name": "Blablabla", "cm_id": 1, "input_type": "range", "input_parameter_name": "bla", "input_max": 1000}]}}
     #    """
 
     # about to send the external IP
@@ -62,7 +62,7 @@ def register():
     signature_final["cm_url"] = base_url
     payload = json.dumps(signature_final)
     response = calculation_module_rpc.call(payload)
-
+    print ('CM will finish register ')
 
     return response
 
@@ -76,7 +76,7 @@ def savefile(filename,url):
         r = requests.get(url, stream=True)
     except:
         LOGGER.error('API unable to download tif files')
-
+        print ('API unable to download tif files saved')
 
     print ('image saved',r.status_code)
     if r.status_code == 200:
@@ -86,7 +86,7 @@ def savefile(filename,url):
                 f.write(chunk)
     else:
         LOGGER.error('API unable to download tif files')
-
+        print ('unsable to download tif')
     return path
 
 
@@ -107,8 +107,8 @@ def compute():
             in: path
             type: dict
             required: true
-            default: {'multiplication_factor': 2}
-          - name: multiplication_factor
+            default: {'reduction_factor': 2}
+          - name: reduction_factor
             in: path
             type: integer
             required: true
@@ -121,7 +121,7 @@ def compute():
          200:
            description: MWS is aware of the CM
            examples:
-            results: {"response": {"category": "Buildings", "cm_name": "calculation_module_1", "layers_needed": ["heat_density_tot"], "cm_description": "this computation module allows to ....", "cm_url": "http://127.0.0.1:5002/", "cm_id": 1, "inputs_calculation_module": [{"input_min": 1, "input_value": 1, "input_unit": "none", "input_name": "Reduction factor", "cm_id": 1, "input_type": "input", "input_parameter_name": "multiplication_factor", "input_max": 10}, {"input_min": 10, "input_value": 50, "input_unit": "", "input_name": "Blablabla", "cm_id": 1, "input_type": "range", "input_parameter_name": "bla", "input_max": 1000}]}}
+            results: {"response": {"category": "Buildings", "cm_name": "calculation_module_1", "layers_needed": ["heat_density_tot"], "cm_description": "this computation module allows to ....", "cm_url": "http://127.0.0.1:5002/", "cm_id": 1, "inputs_calculation_module": [{"input_min": 1, "input_value": 1, "input_unit": "none", "input_name": "Reduction factor", "cm_id": 1, "input_type": "input", "input_parameter_name": "reduction_factor", "input_max": 10}, {"input_min": 10, "input_value": 50, "input_unit": "", "input_name": "Blablabla", "cm_id": 1, "input_type": "range", "input_parameter_name": "bla", "input_max": 1000}]}}
              """
 
     print ('CM will Compute ')
@@ -131,28 +131,33 @@ def compute():
     #TODO CM Developper do not need to change anything here
     # here is the inputs layers and parameters
     inputs_raster_selection = helper.validateJSON(data["inputs_raster_selection"])
-
+    print ('inputs_raster_selection', inputs_raster_selection)
+    LOGGER.info('inputs_raster_selection', inputs_raster_selection)
 
     inputs_parameter_selection = helper.validateJSON(data["inputs_parameter_selection"])
+    print ('inputs_parameter_selection', inputs_parameter_selection)
+    LOGGER.info('inputs_parameter_selection', inputs_parameter_selection)
 
+
+    nuts = helper.validateJSON(data["nuts"])
+    print ('nuts', nuts)
+#    LOGGER.info('nuts', nuts)
 
 
     inputs_vector_selection = helper.validateJSON(data["inputs_vector_selection"])
-    print ('inputs_vector_selection', inputs_vector_selection)
-    LOGGER.info('inputs_vector_selection', inputs_vector_selection)
 
     output_directory = UPLOAD_DIRECTORY
     # call the calculation module function
-    result = calculation_module.calculation(output_directory, inputs_raster_selection,inputs_vector_selection,inputs_parameter_selection)
+    result = calculation_module.calculation(output_directory, inputs_raster_selection,inputs_vector_selection,inputs_parameter_selection,nuts)
 
     response = {
         'result': result
 
 
     }
-
+    print("response ",response)
  #   LOGGER.info('response', response)
-
+    print("type response ",type(response))
 #    LOGGER.info("type response ",type(response))
     # convert response dict to json
     response = json.dumps(response)
